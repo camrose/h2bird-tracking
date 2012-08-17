@@ -1,8 +1,9 @@
 /*
- * tennis_ballbot.cpp
+ * ibird_tracking.cpp
  *
  *  Created on: Sep 09, 2011
- *      Author: ankush, ryanjulian, hhu
+ *      Authors: Ryan Julian, Cameron Rose, and Humphrey Hu
+ *      Original: John Wang and Ankush Gupta
  */
 
 #include <X11/keysym.h>
@@ -22,7 +23,7 @@ using namespace std;
 
 #define DISPLAY_CAPTURE             0 // Display camera capture
 #define DISPLAY_PIPELINE            0 // Display all steps of pipeline
-#define RECORD                      1 // Record video
+#define RECORD                      0 // Record video
 #define VERBOSE                     1 // Lots of printing
 
 // Note the channels are NOT RGB.
@@ -166,8 +167,7 @@ vector <ballContour> doContours(Mat & input)
         if (contArea > 0) { // used to be 0
           // parameters for ellipse fit onto the contour
           RotatedRect contourEllipse;
-          float majorAxis = 0.0, minorAxis = 0.0, area = 0.0,
-          delta = 1, r = 3;
+          float majorAxis = 0.0, minorAxis = 0.0, area = 0.0,delta = 1, r = 3;
         if( contours[idx].size() >= 6 ) {
             try {  
               //fit an ellipse to the contour
@@ -334,8 +334,8 @@ int searchFrame(Mat &frame, Mat &frameHSV, Mat &colorRangeMask) {
           Scalar(TARGET_H_HIGH_G, TARGET_S_HIGH_G, TARGET_V_HIGH_G, 0),
           greenRangeMask);
 
-    dilate(pinkRangeMask,pinkRangeMask,cross,Point(-1,-1),DILATE_LEVEL);
-    dilate(greenRangeMask,greenRangeMask,cross,Point(-1,-1),DILATE_LEVEL);
+    //dilate(pinkRangeMask,pinkRangeMask,cross,Point(-1,-1),DILATE_LEVEL);
+    //dilate(greenRangeMask,greenRangeMask,cross,Point(-1,-1),DILATE_LEVEL);
     
     bitwise_and(pinkRangeMask,greenRangeMask,colorRangeMask);
 
@@ -435,14 +435,12 @@ int main( int argc, char** argv ) {
   cap.set(CV_CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS);
   cap.set(CV_CAP_PROP_CONTRAST, CAM_CONTRAST);
   cap.set(CV_CAP_PROP_SATURATION, CAM_SATURATION);
-  //cap.set(CV_CAP_PROP_HUE, CAM_HUE); // Doesn't exist for our camera
   cap.set(CV_CAP_PROP_GAIN, CAM_GAIN);
-  //cap.set(CV_CAP_PROP_EXPOSURE, CAM_EXPOSURE); // Not supported
   cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
   cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
   cap.set(CV_CAP_PROP_FPS, 30);
   cap.set(CV_CAP_PROP_FORMAT, 0);
-//  cap.set(CV_CAP_PROP_FOURCC, 0);
+  cap.set(CV_CAP_PROP_FORMAT, CV_FOURCC('Y','U','Y','V'));
 
   // Get camera parameters to make sure they were set correctly
   frame_size = Size(cap.get(CV_CAP_PROP_FRAME_WIDTH), cap.get(CV_CAP_PROP_FRAME_HEIGHT));
@@ -461,7 +459,7 @@ int main( int argc, char** argv ) {
 
   // open video recording
 #if RECORD
-  record = VideoWriter("tennis_ballbot.mjpg", CV_FOURCC('M','J','P','G'), 25, frame_size, true);
+  record = VideoWriter("../video/tennis_ballbot.mjpg", CV_FOURCC('M','J','P','G'), 25, frame_size, true);
   if( !record.isOpened() ) {
     printf("Recording failed to open!\n");
     return -1;
@@ -474,6 +472,7 @@ int main( int argc, char** argv ) {
   prev_time = clock();
 
   cap >> frame;
+  imshow("First frame",frame);
   Mat frameHSV(frame.size(), frame.type());
   Mat colorRangeMask(frame.size(), frame.type());
 
@@ -490,15 +489,10 @@ int main( int argc, char** argv ) {
 
 #if VERBOSE
     cout << "Framerate: " << framerate << "\n";
-    //printf("Framerate: %f\n", framerate);
-    //fprintf(stdout, "Framerate: %f\n", framerate);
 #endif
  
     processNewFrame( frame, frameHSV, colorRangeMask );
-    //if(waitKey(5) == (0x100000 + 'q')) {
-    int c = waitKey(5);
-    printf("c = %d\n", c);
-    if(c != -1) {
+    if(waitKey(5) == 'q') {
         break;
     }
     

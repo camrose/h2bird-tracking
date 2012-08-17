@@ -9,11 +9,7 @@ using namespace std;
 #include <stdlib.h>
 
 //##using openCV library##
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
 #include "camera.h"
 using namespace cv;
 using namespace std;
@@ -34,7 +30,7 @@ int main ( int argc, char **argv )
     double cam_brightness, cam_contrast, cam_saturation, cam_gain;
 
 	// video source for webcam
-	VideoCapture cap(1);
+	VideoCapture cap(0);
     if( !cap.isOpened() ) {
         cout << "Camera open failed." << endl;
         return -1;

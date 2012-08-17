@@ -70,7 +70,7 @@ if __name__ == '__main__':
                     process = 0
                     break
                 if c == 'm':
-                    tracking = subprocess.Popen(args = './tennis_ballbot', shell = False, stdout = subprocess.PIPE)
+                    tracking = subprocess.Popen(args = './bin/ibird_tracking', shell = False, stdout = subprocess.PIPE)
                     line_open = 1;              
                 kbint.process(c)
             if line_open == 1:

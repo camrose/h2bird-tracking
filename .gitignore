@@ -1,0 +1,10 @@
+*.pyc
+*.pyo
+*.o
+*.txt
+*.mjpg
+*.data
+*.old
+bin/*
+data/*
+video/*

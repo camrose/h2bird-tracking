@@ -7,6 +7,7 @@
 using namespace std;
 
 #include <stdlib.h>
+#include <stdio.h>
 
 //##using openCV library##
 #include <opencv2/opencv.hpp>
@@ -84,6 +85,7 @@ int main ( int argc, char **argv )
 		ValthresL =0,
 		ValthresH = 0,
 		erosionCount = 1,
+		dilationCount = 1,
 		blurSize = 3;
 		
 	// new window
@@ -97,6 +99,7 @@ int main ( int argc, char **argv )
 	cvCreateTrackbar( "Val UpperT","Color Tune", &ValthresH, 255, 0 );
 	cvCreateTrackbar( "Val LowerT","Color Tune", &ValthresL, 255, 0 );
 	cvCreateTrackbar ("EroTime","Color Tune", &erosionCount,15, 0);
+	cvCreateTrackbar ("DilTime","Color Tune", &dilationCount,15, 0);
 	cvCreateTrackbar ("BlurSize","Color Tune", &blurSize,15, 0);
 
 	// check blurSize bound
@@ -136,19 +139,19 @@ int main ( int argc, char **argv )
 		slices[2].copyTo(val); // get the V channel
 		
 		//apply threshold HUE upper/lower for color range
-		threshold (hue,hue1,HuethresL,255, CV_THRESH_BINARY); // get lower bound
-		threshold (hue, hue2,HuethresH,255, CV_THRESH_BINARY_INV); // get upper bound
+		threshold(hue, hue1,HuethresL,255, CV_THRESH_BINARY); // get lower bound
+		threshold(hue, hue2,HuethresH,255, CV_THRESH_BINARY_INV); // get upper bound
 
 		hue3 = hue1 &hue2; // multiply 2 matrix to get the color range
 
 		// apply thresshold for Sat channel
-		threshold (sat,sat1,SatthresL,255, CV_THRESH_BINARY); // get lower bound
-		threshold (sat, sat2,SatthresH,255, CV_THRESH_BINARY_INV); // get upper bound
+		threshold(sat, sat1,SatthresL,255, CV_THRESH_BINARY); // get lower bound
+		threshold(sat, sat2,SatthresH,255, CV_THRESH_BINARY_INV); // get upper bound
 		sat3 = sat1 & sat2; // multiply 2 matrix to get the color range
 
 		// apply thresshold for Val channel
-		threshold (val,val1,SatthresL,255, CV_THRESH_BINARY); // get lower bound
-		threshold (val, val2,SatthresH,255, CV_THRESH_BINARY_INV); // get upper bound
+		threshold(val, val1,ValthresL,255, CV_THRESH_BINARY); // get lower bound
+		threshold(val, val2,ValthresH,255, CV_THRESH_BINARY_INV); // get upper bound
 		val3 = val1 & val2; // multiply 2 matrix to get the color range
 
 		
@@ -163,32 +166,36 @@ int main ( int argc, char **argv )
 		HSV = sat3 & hue3 & val3;
 
 		// erode and dialation to reduce noise
-		//erode(HSV,erd,cross,Point(-1,-1),erosionCount); // do erode
-		dilate(HSV,dia,cross,Point(-1,-1),erosionCount); // do dialate
+		erode(HSV,erd,cross,Point(-1,-1),erosionCount); // do erode
+		dilate(HSV,dia,cross,Point(-1,-1),dilationCount); // do dialate
 		
 
 		
 		// display image over and over
 		imshow("Webcam Orignal", camImage);
-		//imshow("Blur", blurImage);
-		//imshow("HSV Image", hsvImage);
-		//imshow("Hue channel",hue);
-		//imshow("Lower bound",hue1);
-		//imshow("Upper bound", hue2);
-		//imshow("L channel", Val);
-		//imshow("Color detected", hue3);
-		//imshow("Erosion",erd);
-		//imshow("Hue color",hue3);
-		//imshow("Sat channel",sat);
-		//imshow("Sat color",sat3);
-		//imshow("Val color",val3);
-		//imshow("Sat and Hue",HnS);
-		imshow("HSV",HSV);
-        imshow("dilated", dia);
+		imshow("Blur", blurImage);
+		imshow("Hue Channel",hue);
+		imshow("Hue Lower Bound",hue1);
+		imshow("Hue Upper Bound", hue2);
+		imshow("Hue Mask",hue3);
+		imshow("Val Channel", val);
+		imshow("Val Lower Bound", val1);
+		imshow("Val Upper Bound", val2);
+		imshow("Val Mask", val3);
+		imshow("Sat Channel", sat);
+		imshow("Sat Lower Bound", sat1);
+		imshow("Sat Upper Bound", sat2);
+		imshow("Sat Mask", sat3);
+		imshow("HS Mask",HnS);
+		imshow("HSV Mask", HSV);
+		imshow("Eroded",erd);
+        imshow("Dilated", dia);
 	
 				
 		// Pause for highgui to process image painting
-		cvWaitKey(5);
+		if(cvWaitKey(5) == 'q') {
+			break;
+		}
 		
 				
 	}

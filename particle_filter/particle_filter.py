@@ -36,23 +36,36 @@ def particlefilter(sequence, pos, stepsize, color_model, n):
 class ParticleFilter:
     # TODO: Generic transition and emission models
 
-    def __init__(self, pos, stepsize, color_model, num_particles=1000):
+    def __init__(self, pos, stepsize, color_model, bounds, num_particles=1000):
         self.num_particles = num_particles
-        self.particles = ones((n,2), int) * pos     # Initial position
+        self.particles = ones((num_particles,2), int) * pos     # Initial position
         self.f0 = color_model * ones(num_particles)
         self.pos = pos
         self.w = ones(num_particles)/num_particles
+        self.ss = stepsize
+        self.bounds = bounds
         
     def observe(self, observation):
-        f = observation[tuple(self.particles.T)]    # Measure particle colors
-        self.w = 1./(1. + (self.f0-f)**2)           # Weight ~ inverse quadratic color distance
-        self.w /= sum(w)                            # Normalize w
-        if 1./sum(w**2) < n/2.:                     # Resample if particles collapse
-            self.particles = self.particles[resample(w),:]
+        f = observation[tuple(self.particles.T)]         # Measure particle colors
+        self.w = 1./(1. + (self.f0-f)**2)               # Weight ~ inverse quadratic color distance
+        self.w /= sum(self.w)                           # Normalize w
+        if 1./sum(self.w**2) < self.num_particles/2.:   # Resample if particles degenerate
+            self._resample()
     
     def elapse_time(self):
-        self.particles += uniform(-stepsize, stepsize, x.shape)                         # Uniform step motion model
-        self.particles = self.particles.clip(zeros(2), array(im.shape)-1.astype(int))   # Clip out-of-bounds particles
+        pass
+        self.particles += uniform(-self.ss, self.ss, self.particles.shape)                  # Uniform step motion model
+        self.particles = self.particles.clip(zeros(2), array(self.bounds)-1).astype(int)    # Clip out-of-bounds particles
+        
+    def _resample(self):
+        indices = []
+        C = [0.] + [sum(self.w[:i+1]) for i in range(self.num_particles)]
+        u0, j = random(), 0
+        for u in [(u0+i)/self.num_particles for i in range(self.num_particles)]:
+            while u > C[j]:
+                j+=1
+            indices.append(j-1)
+        self.particles = self.particles[indices,:]        
         
     def get_beliefs(self):
         return self.particles

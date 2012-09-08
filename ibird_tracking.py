@@ -13,8 +13,11 @@ def pf_display(frame, p):
     frame[tuple(xs.T)] = (0, 0, 255)                        # Draw particles
     cv2.imshow("Particle Filter", frame)                    # Show frame
 
-def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480):
+def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480, display=False):
 
+    # matplotlib interactive mode
+    ion()
+    
     # Create an image sequence of 20 frames long
     seq = [im for im in zeros((N_FRAMES,V_SIZE,H_SIZE,3), int)]      
     
@@ -37,7 +40,8 @@ def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480):
     for im in sequence:
         pf.elapse_time()
         pf.observe(im)
-        pf_display(im, pf.get_state())
+        if display:
+            pf_display(im, pf.get_state())
     end = time.time()
     print "FPS: ",N_FRAMES/(end-start)
 

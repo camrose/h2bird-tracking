@@ -31,17 +31,17 @@ int main ( int argc, char **argv )
     double cam_brightness, cam_contrast, cam_saturation, cam_gain;
 
 	// video source for webcam
-	VideoCapture cap(0);
+	VideoCapture cap(1);
     if( !cap.isOpened() ) {
         cout << "Camera open failed." << endl;
         return -1;
     }
-	cap.set(CV_CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS);
-    cap.set(CV_CAP_PROP_CONTRAST, CAM_CONTRAST);
-    cap.set(CV_CAP_PROP_SATURATION, CAM_SATURATION);
-    cap.set(CV_CAP_PROP_GAIN, CAM_GAIN);
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
+	//cap.set(CV_CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS);
+    //cap.set(CV_CAP_PROP_CONTRAST, CAM_CONTRAST);
+    //cap.set(CV_CAP_PROP_SATURATION, CAM_SATURATION);
+    //cap.set(CV_CAP_PROP_GAIN, CAM_GAIN);
+    //cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
+    //cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
 
   // Get camera parameters to make sure they were set correctly
   frame_size = Size(cap.get(CV_CAP_PROP_FRAME_WIDTH), cap.get(CV_CAP_PROP_FRAME_HEIGHT));

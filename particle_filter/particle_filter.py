@@ -22,11 +22,11 @@ class ParticleFilter:
         
     def observe(self, observation):
         # TODO: better emission model
-        f = observation[tuple(self.particles.T)]        # Measure particle colors
-        self.w = 1./(1. + sum((self.f0-f)**2, axis=1))  # Weight ~ inverse quadratic color distance
-        self.w /= sum(self.w)                           # Normalize w
+        f = observation[tuple(self.particles.T)]                # Measure particle colors
+        self.w = 1./(1. + sum((self.f0-f)**2, axis=1)) # Weight ~ inverse quadratic color distance
+        self.w /= sum(self.w)                                   # Normalize w
         # TODO: better resampling condition
-        if 1./sum(self.w**2) < self.num_particles/2.:   # Resample if particles degenerate
+        if 1./sum(self.w**2) < self.num_particles/2.:           # Resample if particles degenerate
             self._resample()
     
     def elapse_time(self):

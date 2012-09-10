@@ -18,4 +18,5 @@ camera_tune: camera_tune.cpp
 
 clean:
 	mkdir -p bin
+	rm -f *.pyc
 	rm -f bin/*

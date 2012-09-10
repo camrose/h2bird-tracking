@@ -55,7 +55,7 @@ if __name__ == "__main__":
     DISPLAY = True
 
     # Color Model
-    color_model = (19, 69, 177)
+    color_model = (88, 129, 220)
 
     # Open camera
     cap = cv2.VideoCapture(CAM)

@@ -48,14 +48,15 @@ def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480, display=Fals
 if __name__ == "__main__":
 
     # Parameters
-    N_PARTICLES = 1000
-    CAM = 1
+    N_PARTICLES = 500
+    CAM = 0
     H_SIZE = 640
     V_SIZE = 480
-    DISPLAY = True
+    DISPLAY = False
 
     # Color Model
-    color_model = (19, 69, 177)
+    #color_model = (19, 69, 177)  # Water bottle
+    color_model = (107, 166, 165) # Tennis ball
 
     # Open camera
     cap = cv2.VideoCapture(CAM)

@@ -29,7 +29,7 @@
 #define VERBOSE                     1 // Lots of printing
 
 /* Camera driver config values */
-#define CAM                 (1)
+#define CAM                 (0)
 #define CAM_WIDTH           (640)
 #define CAM_HEIGHT          (480)
 #define CAM_BRIGHTNESS      (0.4)
@@ -113,7 +113,13 @@ int main( int argc, char** argv ) {
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
   Vec3b color = Vec3b(107, 166, 165);
-  ParticleFilter pf(NUM_PARTICLES, bounds, 8, color);
+  // Tennis ball
+  // H: 85-95
+  // S: 63-136
+  // V: 133-232
+  //Vec3b color = Vec3b(90, 100, 0);
+  TransitionModel transition_model = {32, 32, 0.2};
+  ParticleFilter pf(NUM_PARTICLES, bounds, transition_model, color);
   
   DECLARE_TIMING(frameTimer);
   int count = 0;
@@ -131,7 +137,7 @@ int main( int argc, char** argv ) {
     //STOP_TIMING(frameTimer);          // Stop timing
     //cout.flush();
 
-    if(waitKey(5) == 'q') {
+    if(waitKey(5) == 0x100000 + 'q') {
         break;
     }
 

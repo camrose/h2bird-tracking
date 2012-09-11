@@ -26,11 +26,12 @@ class ParticleFilter:
         self.w = 1./(1. + sum((self.f0-f)**2, axis=1)) # Weight ~ inverse quadratic color distance
         self.w /= sum(self.w)                                   # Normalize w
         # TODO: better resampling condition
-        if 1./sum(self.w**2) < self.num_particles/2.:           # Resample if particles degenerate
+        if 1./sum(self.w**2) < self.num_particles/20.:           # Resample if particles degenerate
             self._resample()
     
     def elapse_time(self):
         # TODO: better transition model
+        # TODO: random particles
         self.particles += uniform(-self.ss, self.ss, self.particles.shape)                  # Uniform step motion model
         self.particles = self.particles.clip(zeros(2), array(self.bounds)-1).astype(int)    # Clip out-of-bounds particles
         

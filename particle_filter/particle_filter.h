@@ -14,27 +14,24 @@
 #define PARTICLE_FILTER_H_
 
 /* CPP Standard Library */
-#include <iostream>
 #include <vector>
 
 /* OpenCV */
 #include <opencv2/opencv.hpp>
 
-typedef cv::Mat State
-typedef cv::Vec3b EmissionModel
-typedef unsigned int TransitionModel
-
-double ColorDistance(Color c, Color c0);
+typedef cv::Mat State;
+typedef cv::Vec3b EmissionModel;
+typedef unsigned int TransitionModel;
 
 class ParticleFilter {
  public:
   /**
    * Constructors
    */
-  ParticleFilter(unsigned int n, std::vector<Range> bounds,
+  ParticleFilter(unsigned int n, std::vector<cv::Range> bounds,
                  TransitionModel transition_model,
                  EmissionModel emission_model);
-  ParticleFilter(cv::Mat initial_particles, std::vector<Range> bounds,
+  ParticleFilter(cv::Mat initial_particles, std::vector<cv::Range> bounds,
                  TransitionModel transition_model,
                  EmissionModel emission_model);
   
@@ -47,7 +44,7 @@ class ParticleFilter {
    * Observe a frame and reweight particles according the emission
    * model
    */
-  void Observe(cv::Mat frame)
+  void Observe(cv::Mat frame);
   
   /**
    * Elapse time according to the transition model
@@ -63,13 +60,13 @@ class ParticleFilter {
    * Accessors
    */
   unsigned int num_particles() { return num_particles_; }
-  std::vector<Range> bounds() { return bounds_; }
+  std::vector<cv::Range> bounds() { return bounds_; }
   cv::Mat particles() { return particles_; }
   cv::Mat weights() { return weights_; }
  
  private:
   unsigned int num_particles_;
-  vector<Range> bounds_;
+  std::vector<cv::Range> bounds_;
   TransitionModel transition_model_;
   EmissionModel emission_model_;
   cv::Mat particles_;
@@ -84,5 +81,5 @@ class ParticleFilter {
    * Normalization
    */
   void Normalize();
-}
+};
 #endif

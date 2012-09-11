@@ -30,15 +30,15 @@
 
 /* Camera driver config values */
 #define CAM                 (0)
-#define CAM_WIDTH           (320)
-#define CAM_HEIGHT          (240)
+#define CAM_WIDTH           (640)
+#define CAM_HEIGHT          (480)
 #define CAM_BRIGHTNESS      (0.4)
 #define CAM_CONTRAST        (0.11)
 #define CAM_SATURATION      (0.11)
 #define CAM_GAIN            (1.0)
 
 /* Particle filter parameters */
-#define NUM_PARTICLES       (100)
+#define NUM_PARTICLES       (1000)
 #define STEP_SIZE           TransitionModel(8)
 #define TARGET_COLOR        EmissionModel(107, 166, 165) // Tennis ball
 
@@ -71,28 +71,28 @@ int main( int argc, char** argv ) {
   }
 
   // Set camera parameters
-  cam.set(CV_CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS);
-  cam.set(CV_CAP_PROP_CONTRAST, CAM_CONTRAST);
+  //cam.set(CV_CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS);
+  //cam.set(CV_CAP_PROP_CONTRAST, CAM_CONTRAST);
   //cam.set(CV_CAP_PROP_SATURATION, CAM_SATURATION);  // not supported on PS Eye
-  cam.set(CV_CAP_PROP_GAIN, CAM_GAIN);
+  //cam.set(CV_CAP_PROP_GAIN, CAM_GAIN);
   cam.set(CV_CAP_PROP_FRAME_WIDTH, CAM_WIDTH);
   cam.set(CV_CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT);
   //cam.set(CV_CAP_PROP_FPS, 125);                     // not supported on PS Eye
-  cam.set(CV_CAP_PROP_FORMAT, 0);
+  //cam.set(CV_CAP_PROP_FORMAT, 0);
 
   // Get camera parameters to make sure they were set correctly
   frame_size = Size(cam.get(CV_CAP_PROP_FRAME_WIDTH), cam.get(CV_CAP_PROP_FRAME_HEIGHT));
-  cam_brightness = cam.get(CV_CAP_PROP_BRIGHTNESS);
-  cam_contrast = cam.get(CV_CAP_PROP_CONTRAST);
+  //cam_brightness = cam.get(CV_CAP_PROP_BRIGHTNESS);
+  //cam_contrast = cam.get(CV_CAP_PROP_CONTRAST);
   //cam_saturation = cam.get(CV_CAP_PROP_SATURATION);
-  cam_gain = cam.get(CV_CAP_PROP_GAIN);
+  //cam_gain = cam.get(CV_CAP_PROP_GAIN);
 
 #if VERBOSE
   printf("Opened %u by %u camera stream.\n", frame_size.width, frame_size.height);
-  printf("Brightness: %f\n", cam_brightness);
-  printf("Contrast: %f\n", cam_contrast);
+  //printf("Brightness: %f\n", cam_brightness);
+  //printf("Contrast: %f\n", cam_contrast);
   //printf("Saturation: %f\n", cam_saturation);
-  printf("Gain: %f\n", cam_gain);
+  //printf("Gain: %f\n", cam_gain);
 #endif
   
   // Show first frame
@@ -131,8 +131,7 @@ int main( int argc, char** argv ) {
     //STOP_TIMING(frameTimer);          // Stop timing
     //cout.flush();
 
-    //if(waitKey(5) == 0x100000 + 'q') {
-    if(waitKey(5) == 'q') {
+    if(waitKey(5) == 0x100000 + 'q') {
         break;
     }
 

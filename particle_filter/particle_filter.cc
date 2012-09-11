@@ -84,7 +84,7 @@ void ParticleFilter::Observe(Mat frame) {
   // Resample if particles degenerate
   // TODO: better resampling condition
   if(1/pow(norm(weights_), 2) < num_particles_/2) {
-    //Resample();
+    Resample();
   }
 }
 

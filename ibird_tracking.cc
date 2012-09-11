@@ -29,7 +29,7 @@
 #define VERBOSE                     1 // Lots of printing
 
 /* Camera driver config values */
-#define CAM                 (0)
+#define CAM                 (1)
 #define CAM_WIDTH           (640)
 #define CAM_HEIGHT          (480)
 #define CAM_BRIGHTNESS      (0.4)
@@ -40,7 +40,7 @@
 /* Particle filter parameters */
 #define NUM_PARTICLES       (1000)
 #define STEP_SIZE           TransitionModel(8)
-#define TARGET_COLOR        EmissionModel(107, 166, 165) // Tennis ball
+#define TARGET_COLOR        EmissionModel(72, 235, 211) // Tennis ball
 
 /* Timing macros */
 #define DECLARE_TIMING(s)  int64 timeStart_##s; double timeDiff_##s; double timeTally_##s = 0; int countTally_##s = 0
@@ -121,17 +121,17 @@ int main( int argc, char** argv ) {
   while(1) {
     //START_TIMING(frameTimer);         // Start timing
     
-    //cam >> frame;                     // Capture a new frame
+    cam >> frame;                     // Capture a new frame
     count++;
     pf.Observe(frame);                // Process frame
     pf.ElapseTime();                  // Transition particles
-    //pf.Draw(frame);                   // Draw particles on frame
-    //imshow("Particle filter", frame); // Show PF state
+    pf.Draw(frame);                   // Draw particles on frame
+    imshow("Particle filter", frame); // Show PF state
     
     //STOP_TIMING(frameTimer);          // Stop timing
     //cout.flush();
 
-    if(waitKey(5) == 0x100000 + 'q') {
+    if(waitKey(5) == 'q') {
         break;
     }
 

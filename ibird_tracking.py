@@ -4,6 +4,7 @@ import time
 from pylab import *
 from numpy.random import *
 import cv2
+import cv
 
 from particle_filter.particle_filter import *
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     CAM = 0
     H_SIZE = 640
     V_SIZE = 480
-    DISPLAY = False
+    DISPLAY = True
 
     # Color Model
     #color_model = (19, 69, 177)  # Water bottle
@@ -60,6 +61,8 @@ if __name__ == "__main__":
 
     # Open camera
     cap = cv2.VideoCapture(CAM)
+    cap.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
     retval, frame = cap.read()
 
     # Initialize particle filter

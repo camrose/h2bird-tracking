@@ -11,10 +11,6 @@
  *  
  */
 /* C Standard Library */
-#include <stdio.h>
-#include <sys/timeb.h>
-#include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
 /* OpenCV */
@@ -27,7 +23,7 @@ using namespace cv;
 using namespace std;
 
 /* Globals */
-cv::RNG random(time(NULL));
+cv::RNG rng(time(NULL));
 
 /* ParticleFilter */
 ParticleFilter::ParticleFilter(unsigned int n, vector<Range> bounds,
@@ -35,7 +31,7 @@ ParticleFilter::ParticleFilter(unsigned int n, vector<Range> bounds,
                                EmissionModel emission_model)
     : num_particles_(n),
       bounds_(bounds),
-      transition_model_(transition_model)
+      transition_model_(transition_model),
       emission_model_(emission_model) {
   particles_ = Mat::zeros(num_particles_, 1, DataType<short>::type);
   weights_ = Mat::ones(num_particles_, 1, DataType<double>::type); 
@@ -46,9 +42,9 @@ ParticleFilter::ParticleFilter(Mat initial_particles,
                                vector<Range> bounds,
                                TransitionModel transition_model,
                                EmissionModel emission_model)
-    : num_particles_(initial_particles.rows)
-      bounds_(bounds)
-      transition_model_(transition_model)
+    : num_particles_(initial_particles.rows),
+      bounds_(bounds),
+      transition_model_(transition_model),
       emission_model_(emission_model) {
   weights_ = Mat::ones(num_particles_, 1, DataType<double>::type);
   Normalize();
@@ -56,8 +52,10 @@ ParticleFilter::ParticleFilter(Mat initial_particles,
 
 void ParticleFilter::InitializeUniformly() {
   // Initialize each dimension uniform randomly within its bounds
-  for(int i = 0; i < bounds_.size(); i++) {
-    randu(particles_.col(i), Scalar(bounds_[i].start), Scalar(bounds_[i].end));
+  Mat col;
+  for(unsigned int i = 0; i < bounds_.size(); i++) {
+    col = particles_.col(i);
+    randu(col, Scalar(bounds_[i].start), Scalar(bounds_[i].end));
   }
   Normalize();
 }
@@ -66,9 +64,11 @@ void ParticleFilter::InitializeUniformly() {
 void ParticleFilter::Observe(Mat frame) {
   
   // Weight ~ inverse quadratic color distance
-  for(int i = 0, double w, Mat p; i < num_particles_; i++) {
+  Mat p;
+  for(unsigned int i = 0; i < num_particles_; i++) {
     p = particles_.row(i);
-    weights_.at(i) = 1/(1 + pow(norm(frame.at(p[0], p[1]), emission_model_), 2));
+    weights_.at<double>(i) = 1/(1 + pow(norm(frame.at<Vec3b>(p.at<int>(0), p.at<int>(1)), emission_model_), 2));
+    // TODO: calculate cumsum of weights, to speed resampling
   }
 
   // Normalize
@@ -84,20 +84,39 @@ void ParticleFilter::Observe(Mat frame) {
 // TODO: better transition model
 void ParticleFilter::ElapseTime() {
   Mat r(particles_.col(0).size(), particles_.type());
-  for(int i = 0; i < bounds_.size(); i++) {
-    randu(r, Scalar(bounds_[i].start), Scalar(bounds_[i].end));
-    particles_.col(i) += r;
+  Mat col;
+  for(unsigned int i = 0; i < bounds_.size(); i++) {
+    col = particles_.col(i);
+    randu(r, -emission_model_, emission_model_);
+    col += r;
+    // Threshold particles outside the bounds
+    min(col, (double) bounds_[i].end, col);
+    max(col, (double) bounds_[i].start, col);
   }
-  // TODO: filter out-of-bounds values
 }
 
 State ParticleFilter::Estimate() {
-  return new State((particles_.t()*weights_).t())
+  return State((particles_.t()*weights_).t());
 }
 
 void ParticleFilter::Resample() {
-  // Stochastic Universal Sampling (Baker, 1987)
-  return;
+  // Stochastic Universal Sampling
+  // J.E. Baker. "Reducing bias an inefficiency in selection algorithms.", 1987
+  Mat sum_weights, new_row;
+  integral(weights_, sum_weights);                              // Find the cumulative sum of the weights
+  double stride = 1/num_particles_;                             // Walk the array in equal strides of total weight
+  
+  int old_idx = 0;                                              // Index in old population
+  int new_idx = 0;                                              // Index in new population
+  for(double marker = stride * rng.uniform(0., 1.);             // Start the walk at a random point inside the first stride
+      marker < num_particles_; marker += stride) {              // Walk in equal strides thereafter until reaching the end
+    while(marker > sum_weights.at<double>(old_idx)) {                   // Find the particle the marker points to
+      old_idx++;
+    }
+    new_row = particles_.row(new_idx);
+    particles_.row(old_idx-1).copyTo(new_row);  // Add the particle under the marker to the new population
+    new_idx++;
+  }
 }
 
 void ParticleFilter::Normalize() {

@@ -19,9 +19,9 @@
 /* OpenCV */
 #include <opencv2/opencv.hpp>
 
-typedef cv::Mat State;
+typedef cv::Point State;
 typedef cv::Vec3b EmissionModel;
-typedef unsigned int TransitionModel;
+typedef short TransitionModel;
 
 class ParticleFilter {
  public:
@@ -57,6 +57,11 @@ class ParticleFilter {
    * Estimate state
    */
   State Estimate();
+
+  /**
+   * Draw
+   */
+  void Draw(cv::Mat frame);
 
   /**
    * Accessors

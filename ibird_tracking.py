@@ -8,11 +8,7 @@ import cv
 
 from particle_filter.particle_filter import *
 
-def pf_display(frame, p):
-    pos, xs, ws = p
-    cv2.circle(frame, (pos[1], pos[0]), 10, (255, 0, 0))    # Draw position estimate
-    frame[tuple(xs.T)] = (0, 0, 255)                        # Draw particles
-    cv2.imshow("Particle Filter", frame)                    # Show frame
+
 
 def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480, display=False):
 

@@ -26,28 +26,36 @@ using namespace std;
 cv::RNG rng(time(NULL));
 
 /* ParticleFilter */
-ParticleFilter::ParticleFilter(unsigned int n, vector<Range> bounds,
+ParticleFilter::ParticleFilter(unsigned int n) { }
+ParticleFilter::ParticleFilter(unsigned int n, 
+                               vector<Range> bounds,
                                TransitionModel transition_model,
                                EmissionModel emission_model)
-    : num_particles_(n),
-      bounds_(bounds),
-      transition_model_(transition_model),
-      emission_model_(emission_model) {
-  particles_ = Mat::zeros(num_particles_, 1, DataType<short>::type);
-  weights_ = Mat::ones(num_particles_, 1, DataType<double>::type); 
-  InitializeUniformly();
+//    : num_particles_(n),
+//      bounds_(bounds),
+//      transition_model_(transition_model),
+//      emission_model_(emission_model)
+{
+  //cout << "Allocating particles..." << endl; cout.flush();
+  //particles_ = Mat::zeros(num_particles_, 1, DataType<short>::type);
+  //cout << "Allocating weights..." << endl; cout.flush();
+  //weights_ = Mat::ones(num_particles_, 1, DataType<double>::type); 
+  //cout << "Initializing particles..." << endl; cout.flush();
+  //InitializeUniformly();
 }
 
 ParticleFilter::ParticleFilter(Mat initial_particles,
                                vector<Range> bounds,
                                TransitionModel transition_model,
                                EmissionModel emission_model)
-    : num_particles_(initial_particles.rows),
-      bounds_(bounds),
-      transition_model_(transition_model),
-      emission_model_(emission_model) {
-  weights_ = Mat::ones(num_particles_, 1, DataType<double>::type);
-  Normalize();
+//    : num_particles_(initial_particles.rows),
+//      bounds_(bounds),
+//      transition_model_(transition_model),
+//      emission_model_(emission_model)
+{
+  //cout << "Initializing weights" << endl;
+  //weights_ = Mat::ones(num_particles_, 1, DataType<double>::type);
+  //Normalize();
 }
 
 void ParticleFilter::InitializeUniformly() {

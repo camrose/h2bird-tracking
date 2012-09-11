@@ -28,6 +28,8 @@ class ParticleFilter {
   /**
    * Constructors
    */
+  ParticleFilter();
+  ParticleFilter(unsigned int n);
   ParticleFilter(unsigned int n, std::vector<cv::Range> bounds,
                  TransitionModel transition_model,
                  EmissionModel emission_model);

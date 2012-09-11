@@ -24,7 +24,7 @@
 #include "particle_filter/particle_filter.h"
 
 /* Modes (TODO: command line) */
-#define DISPLAY                     1 // Display camera capture
+#define DISPLAY                     0 // Display camera capture
 #define RECORD                      0 // Record video
 #define VERBOSE                     1 // Lots of printing
 
@@ -62,7 +62,6 @@ int main( int argc, char** argv ) {
   Mat frame;
   Size frame_size;    
   double cam_brightness, cam_contrast, cam_saturation, cam_gain;
-  time_t start, end;
 
   // Open and configure camera
   VideoCapture cam(CAM);
@@ -78,7 +77,7 @@ int main( int argc, char** argv ) {
   cam.set(CV_CAP_PROP_GAIN, CAM_GAIN);
   cam.set(CV_CAP_PROP_FRAME_WIDTH, CAM_WIDTH);
   cam.set(CV_CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT);
-  //cam.set(CV_CAP_PROP_FPS, 30);                     // not supported on PS Eye
+  //cam.set(CV_CAP_PROP_FPS, 125);                     // not supported on PS Eye
   cam.set(CV_CAP_PROP_FORMAT, 0);
 
   // Get camera parameters to make sure they were set correctly
@@ -113,24 +112,32 @@ int main( int argc, char** argv ) {
   static const Range b[] = { Range(0, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
-  //ParticleFilter pf(NUM_PARTICLES, bounds, STEP_SIZE, TARGET_COLOR);
+  cout << "Initializing particle filter..." << endl;
+  Vec3b color(107, 166, 165);
+  //ParticleFilter pf();
+  ParticleFilter pf(NUM_PARTICLES);
+  //ParticleFilter pf(NUM_PARTICLES, bounds, 8, color);
+  cout << "Done initializing particle filter..." << endl;
   
   DECLARE_TIMING(frameTimer);
+  int count = 0;
+  START_TIMING(frameTimer);
   while(1) {
-    START_TIMING(frameTimer); // Start timing
+    //START_TIMING(frameTimer); // Start timing
     
     cam >> frame;             // Capture a new frame
+    count++;
     //pf.Observe(frame);      // Process frame
     
-    STOP_TIMING(frameTimer);  // Stop timing
+    //STOP_TIMING(frameTimer);  // Stop timing
+    //cout.flush();
 
     if(waitKey(5) == 0x100000 + 'q') {
         break;
     }
 
 #if VERBOSE
-    cout << "FPS = " << 1000./GET_AVERAGE_TIMING(frameTimer) << "\n";
-    cout.flush();
+    //cout << "FPS = " << 1000./GET_AVERAGE_TIMING(frameTimer) << "\n";
 #endif
     
 #if RECORD
@@ -138,6 +145,7 @@ int main( int argc, char** argv ) {
     frame.copyTo(frames[frames.size()-1]);
 #endif
   }
+  STOP_TIMING(frameTimer);
  
  
 #if RECORD
@@ -146,6 +154,8 @@ int main( int argc, char** argv ) {
     record << (frames[i]);
   }
 #endif
+
+  cout << "FPS = " << (count*1000.)/GET_AVERAGE_TIMING(frameTimer) << "\n";
   
   // Close camera cleanly
   cam.release();

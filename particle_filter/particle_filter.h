@@ -21,7 +21,12 @@
 
 typedef cv::Point State;
 typedef cv::Vec3b EmissionModel;
-typedef short TransitionModel;
+
+struct TransitionModel {
+  double mu;
+  double sigma;
+  double epsilon;
+};
 
 class ParticleFilter {
  public:

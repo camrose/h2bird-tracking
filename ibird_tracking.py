@@ -8,7 +8,11 @@ import cv
 
 from particle_filter.particle_filter import *
 
-
+def pf_display(frame, p):
+    pos, xs, ws = p
+    cv2.circle(frame, (pos[1], pos[0]), 10, (255, 0, 0))    # Draw position estimate
+    frame[tuple(xs.T)] = (0, 0, 255)                        # Draw particles
+    cv2.imshow("Particle Filter", frame)                    # Show frame
 
 def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480, display=False):
 
@@ -45,11 +49,11 @@ def pf_test(n_frames=200, n_particles=1000, h_size=640, v_size=480, display=Fals
 if __name__ == "__main__":
 
     # Parameters
-    N_PARTICLES = 500
+    N_PARTICLES = 1000
     CAM = 0
     H_SIZE = 640
     V_SIZE = 480
-    DISPLAY = True
+    DISPLAY = False
 
     # Color Model
     #color_model = (19, 69, 177)  # Water bottle
@@ -67,24 +71,27 @@ if __name__ == "__main__":
 
     # Run particle filter
     times = 30*ones(10)
+    count = 0
+    start = time.time()     # start timer
+    cv2.namedWindow("Window")
     while True:
-        start = time.time()     # start timer
-        
+        count = count + 1
+
         # Capture
         retval, frame = cap.read()
 
         # Process
         pf.elapse_time()
         pf.observe(frame)
-
-        end = time.time()       # stop timer
-
-        # Display
-        times = append(times[1:end], end-start)
-        print "FPS: ",1/mean(times)
-        if DISPLAY:
-            pf_display(frame, pf.get_state())
         
-        if cv2.waitKey(5) == ord('q'):
+        # Display
+        if DISPLAY:
+           pf_display(frame, pf.get_state())
+        
+        if cv2.waitKey(5) == 0x100000 + ord('q'):
             break;
+            
+    end = time.time()       # stop timer
+    #times = append(times[1:end], end-start)
+    print "FPS: ",count/(end-start)
 

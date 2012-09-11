@@ -83,22 +83,34 @@ void ParticleFilter::Observe(Mat frame) {
   
   // Resample if particles degenerate
   // TODO: better resampling condition
-  //if(1/pow(norm(weights_), 2) < num_particles_/2) {
+  if(1/pow(norm(weights_), 2) < num_particles_/2) {
     Resample();
-  //}
+  }
 }
 
-// TODO: better transition model
 void ParticleFilter::ElapseTime() {
-  Mat r(particles_.col(0).size(), particles_.type());
-  Mat col;
+  Mat g, col_gaussian, col_uniform;
+  
+  // Gaussian random walk with epsilon uniform randomly distributed
+  int num_uniform = (int) (transition_model_.epsilon * (double) num_particles_);
+  
   for(unsigned int i = 0; i < bounds_.size(); i++) {
-    col = particles_.col(i);
-    randu(r, -transition_model_, transition_model_);
-    col += r;
+    // Get columns for gaussian and uniform sets
+    col_gaussian = particles_(Range(num_uniform, num_particles_-1),Range(i,i+1));
+    col_uniform = particles_(Range(0, num_uniform), Range(i,i+1));
+  
+    // Gaussian
+    g = Mat(col_gaussian.size(), col_gaussian.type());
+    //randn(g, Scalar(transition_model_.mu), Scalar(transition_model_.sigma));
+    randu(g, Scalar(-transition_model_.mu), Scalar(transition_model_.mu));
+    col_gaussian += g;
+    
     // Threshold particles outside the bounds
-    min(col, bounds_[i].end, col);
-    max(col, bounds_[i].start, col);
+    min(col_gaussian, bounds_[i].end, col_gaussian);
+    max(col_gaussian, bounds_[i].start, col_gaussian);
+    
+    // Uniform
+    randu(col_uniform, Scalar(bounds_[i].start), Scalar(bounds_[i].end));
   }
 }
 

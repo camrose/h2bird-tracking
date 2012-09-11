@@ -83,9 +83,9 @@ void ParticleFilter::Observe(Mat frame) {
   
   // Resample if particles degenerate
   // TODO: better resampling condition
-  if(1/pow(norm(weights_), 2) < num_particles_/2) {
+  //if(1/pow(norm(weights_), 2) < num_particles_/2) {
     Resample();
-  }
+  //}
 }
 
 // TODO: better transition model
@@ -106,25 +106,26 @@ State ParticleFilter::Estimate() {
   Mat float_particles;
   particles_.convertTo(float_particles, weights_.type());
   Mat_<double> p = float_particles.t()*weights_;
-  return State(p(0), p(1));
+  return State(p(1), p(0));
 }
 
 void ParticleFilter::Resample() {
   // Stochastic Universal Sampling
   // J.E. Baker. "Reducing bias an inefficiency in selection algorithms.", 1987
-  Mat sum_weights, new_row;
-  integral(weights_, sum_weights);                              // Find the cumulative sum of the weights
-  double stride = 1/num_particles_;                             // Walk the array in equal strides of total weight
+  Mat cumsum, new_row;
+  integral(weights_, cumsum);                         // Find the cumulative sum of the weights
+  cumsum = cumsum.col(1);                             // Workaround: integral always returns a 2D array
+  double stride = 1./num_particles_;                  // Walk the array in equal strides of total weight
   
-  int old_idx = 0;                                              // Index in old population
-  int new_idx = 0;                                              // Index in new population
-  for(double marker = stride * rng.uniform(0., 1.);             // Start the walk at a random point inside the first stride
-      marker < num_particles_; marker += stride) {              // Walk in equal strides thereafter until reaching the end
-    while(marker > sum_weights.at<double>(old_idx)) {           // Find the particle the marker points to
+  int old_idx = 0;                                    // Index in old population
+  int new_idx = 0;                                    // Index in new population
+  for(double marker = stride * rng.uniform(0., 1.);   // Start the walk at a random point inside the first stride
+      marker < 1; marker += stride) {                 // Walk in equal strides thereafter until reaching the end
+    while(marker > cumsum.at<double>(old_idx)) {      // Find the particle the marker points to
       old_idx++;
     }
     new_row = particles_.row(new_idx);
-    particles_.row(old_idx-1).copyTo(new_row);  // Add the particle under the marker to the new population
+    particles_.row(old_idx-1).copyTo(new_row);        // Add the particle under the marker to the new population
     new_idx++;
   }
 }

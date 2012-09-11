@@ -10,13 +10,20 @@ ibird_tracking: ibird_tracking.cc particle_filter.o
 	
 debug: ibird_tracking.cc particle_filter_debug.o
 	mkdir -p bin
-	gcc $(CFLAGS) -o bin/$@ $< particle_filter/particle_filter_debug.o $(LDFLAGS) -lm -lstdc++ -fno-omit-frame-pointer -ggdb
+	gcc $(CFLAGS) -o bin/$@ $< particle_filter/particle_filter_debug.o $(LDFLAGS) -lm -lstdc++ -fno-omit-frame-pointer -g
+
+profile: ibird_tracking.cc particle_filter_profile.o
+	mkdir -p bin
+	gcc $(CFLAGS) -o bin/$@ $< particle_filter/particle_filter_profile.o $(LDFLAGS) -lm -lstdc++ -fno-omit-frame-pointer -g -pg
 
 particle_filter.o: particle_filter/particle_filter.cc
 	gcc $(CFLAGS) -o particle_filter/$@ -c $< $(LDFLAGS) -lstdc++ -lm -O3
 
 particle_filter_debug.o: particle_filter/particle_filter.cc
-	gcc $(CFLAGS) -o particle_filter/$@ -c $< $(LDFLAGS) -lstdc++ -lm -fno-omit-frame-pointer -ggdb
+	gcc $(CFLAGS) -o particle_filter/$@ -c $< $(LDFLAGS) -lstdc++ -lm -fno-omit-frame-pointer -g
+
+particle_filter_profile.o: particle_filter/particle_filter.cc
+	gcc $(CFLAGS) -o particle_filter/$@ -c $< $(LDFLAGS) -lstdc++ -lm -fno-omit-frame-pointer -g -pg
 
 camera_tune: camera_tune.cc
 	mkdir -p bin

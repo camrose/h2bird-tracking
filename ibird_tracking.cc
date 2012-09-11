@@ -38,7 +38,7 @@
 #define CAM_GAIN            (1.0)
 
 /* Particle filter parameters */
-#define NUM_PARTICLES       (1000)
+#define NUM_PARTICLES       (100)
 #define STEP_SIZE           TransitionModel(8)
 #define TARGET_COLOR        EmissionModel(107, 166, 165) // Tennis ball
 
@@ -112,12 +112,8 @@ int main( int argc, char** argv ) {
   static const Range b[] = { Range(0, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
-  cout << "Initializing particle filter..." << endl;
   Vec3b color(107, 166, 165);
-  //ParticleFilter pf();
-  ParticleFilter pf(NUM_PARTICLES);
-  //ParticleFilter pf(NUM_PARTICLES, bounds, 8, color);
-  cout << "Done initializing particle filter..." << endl;
+  ParticleFilter pf(NUM_PARTICLES, bounds, 8, color);
   
   DECLARE_TIMING(frameTimer);
   int count = 0;
@@ -125,14 +121,16 @@ int main( int argc, char** argv ) {
   while(1) {
     //START_TIMING(frameTimer); // Start timing
     
-    cam >> frame;             // Capture a new frame
+    //cam >> frame;             // Capture a new frame
     count++;
-    //pf.Observe(frame);      // Process frame
+    pf.Observe(frame);      // Process frame
+    //pf.ElapseTime();          // Transition particles
     
     //STOP_TIMING(frameTimer);  // Stop timing
     //cout.flush();
 
-    if(waitKey(5) == 0x100000 + 'q') {
+    //if(waitKey(5) == 0x100000 + 'q') {
+    if(waitKey(5) == 'q') {
         break;
     }
 

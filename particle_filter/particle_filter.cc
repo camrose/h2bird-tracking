@@ -38,7 +38,7 @@ ParticleFilter::ParticleFilter(unsigned int n,
       emission_model_(emission_model)
 {
   particles_ = Mat::zeros(num_particles_, bounds_.size(), DataType<short>::type);
-  weights_ = Mat::ones(num_particles_, 1, DataType<double>::type); 
+  weights_ = Mat::ones(num_particles_, 1, DataType<double>::type);
   InitializeUniformly();
 }
 
@@ -67,24 +67,24 @@ void ParticleFilter::InitializeUniformly() {
 
 // TODO: better emission model
 void ParticleFilter::Observe(Mat frame) {
-  
+    
   // Weight ~ inverse quadratic color distance
-  Mat p;
+  Mat_<short> p;
   Vec3b color;
   for(unsigned int i = 0; i < num_particles_; i++) {
     p = particles_.row(i);
-    color = frame.at<Vec3b>(p.at<int>(0), p.at<int>(1)); //TODO: broken
-    //weights_.at<double>(i) = 1/(1 + pow(norm(color, emission_model_), 2));
+    color = frame.at<Vec3b>(p(0), p(1));
+    weights_.at<double>(i) = 1/(1 + pow(norm(color, emission_model_), 2));
     // TODO: calculate cumsum of weights, to speed resampling
   }
 
   // Normalize
   Normalize();
-                                         
+  
   // Resample if particles degenerate
   // TODO: better resampling condition
   if(1/pow(norm(weights_), 2) < num_particles_/2) {
-    Resample(); //TODO: broken
+    //Resample();
   }
 }
 
@@ -97,13 +97,16 @@ void ParticleFilter::ElapseTime() {
     randu(r, -transition_model_, transition_model_);
     col += r;
     // Threshold particles outside the bounds
-    min(col, (double) bounds_[i].end, col);
-    max(col, (double) bounds_[i].start, col);
+    min(col, bounds_[i].end, col);
+    max(col, bounds_[i].start, col);
   }
 }
 
 State ParticleFilter::Estimate() {
-  return State((particles_.t()*weights_).t());
+  Mat float_particles;
+  particles_.convertTo(float_particles, weights_.type());
+  Mat_<double> p = float_particles.t()*weights_;
+  return State(p(0), p(1));
 }
 
 void ParticleFilter::Resample() {
@@ -128,4 +131,15 @@ void ParticleFilter::Resample() {
 
 void ParticleFilter::Normalize() {
   normalize(weights_, weights_, 1, 0, NORM_L1);
+}
+
+void ParticleFilter::Draw(Mat frame) {
+  circle(frame, Estimate(), 10, Scalar(255, 0, 0), 2); // Draw position estimate
+  Mat_<short> p;
+  for(unsigned int i = 0; i < num_particles_; i++) {      // Draw particles
+    p = particles_.row(i);
+    frame.at<Vec3b>(p(0),p(1))[0] = 0;
+    frame.at<Vec3b>(p(0),p(1))[1] = 0;
+    frame.at<Vec3b>(p(0),p(1))[2] = 255;
+  }
 }

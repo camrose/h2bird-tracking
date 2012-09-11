@@ -112,21 +112,23 @@ int main( int argc, char** argv ) {
   static const Range b[] = { Range(0, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
-  Vec3b color(107, 166, 165);
+  Vec3b color = Vec3b(107, 166, 165);
   ParticleFilter pf(NUM_PARTICLES, bounds, 8, color);
   
   DECLARE_TIMING(frameTimer);
   int count = 0;
   START_TIMING(frameTimer);
   while(1) {
-    //START_TIMING(frameTimer); // Start timing
+    //START_TIMING(frameTimer);         // Start timing
     
-    //cam >> frame;             // Capture a new frame
+    //cam >> frame;                     // Capture a new frame
     count++;
-    pf.Observe(frame);      // Process frame
-    //pf.ElapseTime();          // Transition particles
+    pf.Observe(frame);                // Process frame
+    pf.ElapseTime();                  // Transition particles
+    //pf.Draw(frame);                   // Draw particles on frame
+    //imshow("Particle filter", frame); // Show PF state
     
-    //STOP_TIMING(frameTimer);  // Stop timing
+    //STOP_TIMING(frameTimer);          // Stop timing
     //cout.flush();
 
     //if(waitKey(5) == 0x100000 + 'q') {

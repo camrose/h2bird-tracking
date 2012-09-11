@@ -11,7 +11,6 @@ using namespace std;
 
 //##using openCV library##
 #include <opencv2/opencv.hpp>
-#include "camera.h"
 using namespace cv;
 using namespace std;
 

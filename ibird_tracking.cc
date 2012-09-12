@@ -112,14 +112,17 @@ int main( int argc, char** argv ) {
   static const Range b[] = { Range(0, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
-  Vec3b color = Vec3b(107, 166, 165);
+  //Vec3b color = Vec3b(107, 166, 165); // Tennis ball
+  //Vec3b color = Vec3b(123, 93, 189); // Pink tail
+  Vec3b color = Vec3b(66, 48, 140); // Pink tail shadows
+  //Vec3b color = Vec3b(66, 81, 49); // Green tail
   // Tennis ball
   // H: 85-95
   // S: 63-136
   // V: 133-232
   //Vec3b color = Vec3b(90, 100, 0);
   TransitionModel transition_model = {0, 16, 0.3};
-  ParticleFilter pf(NUM_PARTICLES, bounds, transition_model, color);
+  ParticleFilter pf(NUM_PARTICLES, bounds, transition_model, frame.clone());
   
   DECLARE_TIMING(frameTimer);
   int count = 0;

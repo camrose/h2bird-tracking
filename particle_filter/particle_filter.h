@@ -20,7 +20,8 @@
 #include <opencv2/opencv.hpp>
 
 typedef cv::Point State;
-typedef cv::Vec3b EmissionModel;
+//typedef cv::Vec3b EmissionModel;
+typedef cv::Mat EmissionModel;
 
 struct TransitionModel {
   double mu;

@@ -101,8 +101,8 @@ void ParticleFilter::ElapseTime() {
   
     // Gaussian
     g = Mat(col_gaussian.size(), col_gaussian.type());
-    //randn(g, Scalar(transition_model_.mu), Scalar(transition_model_.sigma));
-    randu(g, Scalar(-transition_model_.mu), Scalar(transition_model_.mu));
+    randn(g, Scalar(transition_model_.mu), Scalar(transition_model_.sigma));
+    //randu(g, Scalar(-transition_model_.mu), Scalar(transition_model_.mu));
     col_gaussian += g;
     
     // Threshold particles outside the bounds

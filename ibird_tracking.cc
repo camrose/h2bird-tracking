@@ -38,7 +38,7 @@
 #define CAM_GAIN            (1.0)
 
 /* Particle filter parameters */
-#define NUM_PARTICLES       (1000)
+#define NUM_PARTICLES       (2000)
 #define STEP_SIZE           TransitionModel(8)
 #define TARGET_COLOR        EmissionModel(72, 235, 211) // Tennis ball
 
@@ -118,7 +118,7 @@ int main( int argc, char** argv ) {
   // S: 63-136
   // V: 133-232
   //Vec3b color = Vec3b(90, 100, 0);
-  TransitionModel transition_model = {32, 32, 0.2};
+  TransitionModel transition_model = {0, 16, 0.3};
   ParticleFilter pf(NUM_PARTICLES, bounds, transition_model, color);
   
   DECLARE_TIMING(frameTimer);

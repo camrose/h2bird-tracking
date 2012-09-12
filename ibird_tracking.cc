@@ -24,7 +24,7 @@
 #include "particle_filter/particle_filter.h"
 
 /* Modes (TODO: command line) */
-#define DISPLAY                     0 // Display camera capture
+#define DISPLAY                     1 // Display camera capture
 #define RECORD                      0 // Record video
 #define VERBOSE                     1 // Lots of printing
 
@@ -125,16 +125,15 @@ int main( int argc, char** argv ) {
   int count = 0;
   START_TIMING(frameTimer);
   while(1) {
-    //START_TIMING(frameTimer);         // Start timing
-    
     cam >> frame;                     // Capture a new frame
     count++;
     pf.Observe(frame);                // Process frame
     pf.ElapseTime();                  // Transition particles
+#if DISPLAY || RECORD
     pf.Draw(frame);                   // Draw particles on frame
     imshow("Particle filter", frame); // Show PF state
-    
-    //STOP_TIMING(frameTimer);          // Stop timing
+#endif
+
     //cout.flush();
 
     if(waitKey(5) == 0x100000 + 'q') {

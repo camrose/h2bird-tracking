@@ -67,7 +67,7 @@ class ParticleFilter {
   /**
    * Draw
    */
-  void Draw(cv::Mat frame);
+  State Draw(cv::Mat frame);
 
   /**
    * Accessors

@@ -54,14 +54,52 @@ using namespace cv;
 using namespace std;
 
 VideoWriter record;
+Mat frame;
 char filename[200];
 vector<Mat> frames;
+int drag = 0;
+Point top_point = Point(0,0);
+Point bottom_point = Point(0,0);
+Point target = Point(0,0);
+
+void mouseHandler(int event, int x, int y, int flags, void* param) {
+  if (event == CV_EVENT_LBUTTONDOWN && !drag) {
+    top_point.x = x;
+    top_point.y = y;
+    bottom_point.x = x;
+    bottom_point.y = y;
+    target.x = 0;
+    target.y = 0;
+    drag = 1;
+  }
+  if (event == CV_EVENT_MOUSEMOVE && drag) {
+    bottom_point.x = x;
+    bottom_point.y = y;
+  }
+  if (event == CV_EVENT_LBUTTONUP) {
+    if (top_point.x > bottom_point.x) {
+      target.x = (int)(top_point.x - abs(bottom_point.x-top_point.x)/2);
+    } else {
+      target.x = (int)(top_point.x + abs(bottom_point.x-top_point.x)/2);
+    }
+    if (top_point.y > bottom_point.y) {
+      target.y = (int)(top_point.y - abs(bottom_point.y-top_point.y)/2);
+    } else {
+      target.y = (int)(top_point.y + abs(bottom_point.y-top_point.y)/2);
+    }
+    drag = 0;
+  }
+  if (event == CV_EVENT_RBUTTONUP) {
+    imshow("First frame", frame);
+  }
+}
 
 int main( int argc, char** argv ) {
-  
-  Mat frame;
+
   Size frame_size;    
   double cam_brightness, cam_contrast, cam_saturation, cam_gain;
+  
+  Point ibird;
 
   // Open and configure camera
   VideoCapture cam(CAM);
@@ -98,10 +136,11 @@ int main( int argc, char** argv ) {
   // Show first frame
   cam >> frame;
   imshow("First frame",frame);
+  setMouseCallback( "First frame", mouseHandler, 0 );
 
   // Open video recording
 #if RECORD
-  record = VideoWriter("../video/output.mjpg", CV_FOURCC('M','J','P','G'), 25, frame_size, true);
+  record = VideoWriter("video/output.mjpg", CV_FOURCC('M','J','P','G'), 30, frame_size, true);
   if( !record.isOpened() ) {
     printf("Recording failed to open!\n");
     return -1;
@@ -133,15 +172,35 @@ int main( int argc, char** argv ) {
     pf.Observe(frame);                // Process frame
     pf.ElapseTime();                  // Transition particles
 #if DISPLAY || RECORD
-    pf.Draw(frame);                   // Draw particles on frame
+    ibird = pf.Draw(frame);  // Draw particles on frame
+    if (top_point.x != bottom_point.x && top_point.y != bottom_point.y) {
+      rectangle(frame, top_point, bottom_point, CV_RGB(255, 0, 0), 1, 8, 0);
+      if (target.x != 0 && target.y != 0) {
+         ellipse( frame, target, Size(10,10), 
+            0, 0, 360, Scalar(0,255,0), CV_FILLED, 8, 0);
+      }
+    }
+#else
+    ibird = pf.Estimate();
+#endif
+
+    if (target.x != 0) {
+      printf("#%d,%d,%d,%d\n",ibird.x, ibird.y, target.x, target.y);
+      cout.flush();
+    }
+
+#if DISPLAY
     imshow("Particle filter", frame); // Show PF state
 #endif
 
     //cout.flush();
 
-    if(waitKey(5) == 0x100000 + 'q') {
+    char key = waitKey(5);
+    if(key == 0x100000 + 'q' || key == 'q') {
         break;
     }
+    
+    //printf("%x\n", waitKey(5));
 
 #if VERBOSE
     //cout << "FPS = " << 1000./GET_AVERAGE_TIMING(frameTimer) << "\n";
@@ -153,7 +212,8 @@ int main( int argc, char** argv ) {
 #endif
   }
   STOP_TIMING(frameTimer);
- 
+  cout << "FPS = " << (count*1000.)/GET_TIMING(frameTimer) << "\n";
+  cout.flush();
  
 #if RECORD
   // Save frames before exiting
@@ -161,8 +221,6 @@ int main( int argc, char** argv ) {
     record << (frames[i]);
   }
 #endif
-
-  cout << "FPS = " << (count*1000.)/GET_AVERAGE_TIMING(frameTimer) << "\n";
   
   // Close camera cleanly
   cam.release();

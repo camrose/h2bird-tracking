@@ -55,7 +55,7 @@ class KeyboardInterface(object):
         self.thrust = IncrementCounter( start_value = 0.0, range = (1.0, 0.0), increment = 0.025 ) #RESTORE upper limit
         self.steer = IncrementCounter( start_value = 0.0, range = (1.0, -1.0), increment = 0.05 )        
         # PID constants        
-        self.yaw_coeffs = [ 0.0,    0.0,    2.0,   0.0,    0.4,    1.0,    1.0] # For steer Ki 0.8
+        self.yaw_coeffs = [ 0.0,    0.0,    -2.0,   0.0,    -0.4,    1.0,    1.0] # For steer Ki 0.8
         self.pitch_coeffs = [ 0.0,    0.0,    3.0,   0.0,    0.2,    1.0,    1.0] # For elevator
         self.roll_coeffs = [ 0.0,    0.0,    -0.2,   0.0,    0.0,    1.0,    1.0] # For thrust 
         self.yaw_filter_coeffs = [ 3, 0, 0.0007, 0.0021, 0.0021, 0.0007, 1.0, 2.6861573965, -2.419655111, 0.7301653453]
@@ -132,7 +132,9 @@ class KeyboardInterface(object):
             self.comm.setRegulatorMode(RegulatorStates['Remote Control'])                    
         elif c == '4':
             self.rate_control = not self.rate_control           
-            self.comm.setRateMode(self.rate_control)                        
+            self.comm.setRateMode(self.rate_control)
+        elif c == '9':
+            self.comm.setRegulatorRef( eulerToQuaternionDeg( 90, 80, 0 ) )                       
         elif c == '0':
             #self.pinging = not self.pinging
             self.comm.setRegulatorRef((1.0, 0.0, 0.0, 0.0))
@@ -147,7 +149,7 @@ class KeyboardInterface(object):
             self.comm.setRegulatorPid( self.yaw_coeffs + self.pitch_coeffs + self.roll_coeffs )                                
             self.comm.setRegulatorRateFilter( self.yaw_filter_coeffs )
             self.comm.setTelemetrySubsample(1)
-            self.comm.setSlewLimit(4.0)
+            self.comm.setSlewLimit(0.0)
         elif c == ']':
             self.thrust.increase()
             self.offsets_changed = True                        

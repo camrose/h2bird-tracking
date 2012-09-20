@@ -148,8 +148,9 @@ void ParticleFilter::Normalize() {
   normalize(weights_, weights_, 1, 0, NORM_L1);
 }
 
-void ParticleFilter::Draw(Mat frame) {
-  circle(frame, Estimate(), 10, Scalar(255, 0, 0), 2); // Draw position estimate
+State ParticleFilter::Draw(Mat frame) {
+  State estimate = Estimate();
+  circle(frame, estimate, 10, Scalar(255, 0, 0), 2); // Draw position estimate
   Mat_<short> p;
   for(unsigned int i = 0; i < num_particles_; i++) {      // Draw particles
     p = particles_.row(i);
@@ -157,4 +158,5 @@ void ParticleFilter::Draw(Mat frame) {
     frame.at<Vec3b>(p(0),p(1))[1] = 0;
     frame.at<Vec3b>(p(0),p(1))[2] = 255;
   }
+  return estimate;
 }

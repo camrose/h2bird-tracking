@@ -97,15 +97,15 @@ class CommandInterface(object):
         
     def setRegulatorOffsets(self, offsets):
         data_pack = pack(3*'f', *offsets)
-        if self.debugPrint:
-            print "Setting offsets to: " + str(offsets)
+        #if self.debugPrint:
+            #print "Setting offsets to: " + str(offsets)
         pld = Payload(data = data_pack, status = 0, type = Commands['SET_REGULATOR_OFFSETS'])
         self.tx_callback(dest = self.endpoint_addr, packet = str(pld))
         
     def setRegulatorRef(self, ref):
         data_pack = pack(4*'f', *ref)
-        if self.debugPrint:
-            print "Setting quaternion reference to: " + str(ref)
+        #if self.debugPrint:
+        #    print "Setting quaternion reference to: " + str(ref)
         pld = Payload(data = data_pack, status = 0, type = Commands['SET_REGULATOR_REF'])
         self.tx_callback(dest = self.endpoint_addr, packet = str(pld))
     

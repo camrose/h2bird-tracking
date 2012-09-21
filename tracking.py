@@ -26,7 +26,9 @@ if __name__ == '__main__':
   
     framerate = 0.0
     pixel_pos = []
-    row = 0;
+    row = 0
+    tracking_flag = 0
+    found = 0
     
     print "Beginning initialization..."
 
@@ -63,6 +65,7 @@ if __name__ == '__main__':
         process = 1
         start_time = datetime.datetime.now()
         yaw_offset = 0.0
+        sum_yaw = 0.0
         while process:
 
             if kbmon.hasKey():
@@ -85,22 +88,38 @@ if __name__ == '__main__':
                 x = int(components[0])
                 wx = int(components[2])
                 wy = int(components[3])
+                
+#                if y > 440 or tracking_flag == 1:
+#                    if y > 440 and found == 0:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.0))
+#                    elif y < wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+#                        found = 1
+#                    elif y >= wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.0))
+#                        found = 1
+#                    tracking_flag = 1
+                    
                 if y < wy:
-                   comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, kbint.pitch.value(), 0.0 ) )
-                   comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.8))
                 elif y >= wy:
-                   comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, kbint.pitch.value(), 0.0 ) )
-                   comm.setRegulatorOffsets((0.0, 0.0, 1.0))
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
                 
-                yaw_error_pixel = wx - x;
+                yaw_error_pixel = wx - x
                 yaw_error_rad = (75.0/640.0)*yaw_error_pixel
-                yaw_offset = 2.5*yaw_error_rad
-                
+                yaw_offset = 2.0*yaw_error_rad + 0.00001*sum_yaw
+                sum_yaw = sum_yaw + yaw_offset
                 #print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
                 end_time = datetime.datetime.now()
                 round_time = end_time - start_time
                 dt = round_time.seconds/1.0 + round_time.microseconds/1000000.0
                 pixel_pos.append([dt,x,y,wx,wy,yaw_error_pixel,yaw_error_rad,yaw_offset])
+
             if line != '' and line[0] == 'F':
               framerate = float(line[6:12])
             #time.sleep(0.06)

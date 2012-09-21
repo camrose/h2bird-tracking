@@ -24,7 +24,7 @@ def txCallback(dest, packet):
     
 def loop():
 
-    DEFAULT_COM_PORT = 'COM7'
+    DEFAULT_COM_PORT = 'COM0'
     DEFAULT_BAUD_RATE = 57600
     DEFAULT_ADDRESS = '\x10\x21'
     DEFAULT_PAN = '\x10\x01'

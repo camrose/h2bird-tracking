@@ -17,16 +17,19 @@ def processPacket(packet):
 	
 if __name__ == '__main__':
 
-	DEFAULT_COM_PORT = 'COM21'
+	#DEFAULT_COM_PORT = 'COM21'
+	DEFAULT_COM_PORT = '/dev/ttyUSB0'
 	DEFAULT_BAUD_RATE = 57600
-	DEFAULT_ADDRESS = '\x10\x21'
-	DEFAULT_PAN = 0x1001
+	DEFAULT_ADDRESS = 0x1020
+	addr = '\x10\x21'
+	DEFAULT_PAN = 0x1005
 	DEFAULT_ITERS = 10
+	DEFAULT_CHAN = 0x12
 	
 	if len(sys.argv) == 1:
 		com = DEFAULT_COM_PORT
 		baud = DEFAULT_BAUD_RATE
-		addr = DEFAULT_ADDRESS
+		#addr = DEFAULT_ADDRESS
 		iters = DEFAULT_ITERS
 		
 	elif len(sys.argv) == 5:
@@ -43,6 +46,8 @@ if __name__ == '__main__':
 	xb = XBee(ser, callback = processPacket)
 	print "Setting PAN ID to " + hex(DEFAULT_PAN)
 	xb.at(command = 'ID', parameter = pack('>H', DEFAULT_PAN))
+	xb.at(command = 'CH', parameter = pack('>H', DEFAULT_CHAN))
+	xb.at(command = 'MY', parameter = pack('>H', DEFAULT_ADDRESS))
 	
 	# Create file
 	today = datetime.today()
@@ -69,7 +74,7 @@ if __name__ == '__main__':
 			print "Beginning iteration " + str(i) + "..."
 			rec = False
 			start_time = datetime.now()
-			coord.sendPing()
+			coord.sendEcho()
 			#xb.wait_read_frame()
 			while rec == False:
 				pass
@@ -83,10 +88,14 @@ if __name__ == '__main__':
 			continue
 			
 	record_log.write("Capture Time\tRoundtrip Time\n")
+	total_time = 0.0
 	for i in range(0, iters):
 		cap_time = capture_times[i]
 		round_time = roundtrip_times[i]
+		total_time = total_time + round_time
 		record_log.write(str(cap_time) + "\t" + str(round_time) + "\n")
+	
+	print "Average Time: " + str(total_time/iters) + " milliseconds."
 	
 	xb.halt()
 	record_log.close()

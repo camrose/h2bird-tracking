@@ -143,7 +143,7 @@ int main( int argc, char** argv ) {
 #endif
 
   // Setup particle filter
-  static const Range b[] = { Range(0, frame_size.height-1), 
+  static const Range b[] = { Range(90, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
   //Vec3b color = Vec3b(107, 166, 165); // Tennis ball

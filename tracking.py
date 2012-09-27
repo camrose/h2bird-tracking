@@ -66,6 +66,8 @@ if __name__ == '__main__':
         start_time = datetime.datetime.now()
         yaw_offset = 0.0
         sum_yaw = 0.0
+        prev_yaw = -100.0
+        yaw_diff = 0.0
         while process:
 
             if kbmon.hasKey():
@@ -84,37 +86,42 @@ if __name__ == '__main__':
             if line != '' and line[0] == '#':
                 components = line[1:-1].split(',')
             #    print components
-                y = int(components[1])
                 x = int(components[0])
+                y = int(components[1])
                 wx = int(components[2])
                 wy = int(components[3])
                 
-#                if y > 440 or tracking_flag == 1:
-#                    if y > 440 and found == 0:
-#                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
-#                        comm.setRegulatorOffsets((0.0, 0.0, 0.0))
-#                    elif y < wy:
-#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-#                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
-#                        found = 1
-#                    elif y >= wy:
-#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-#                        comm.setRegulatorOffsets((0.0, 0.0, 0.0))
-#                        found = 1
-#                    tracking_flag = 1
+                if y > 440 or tracking_flag == 1:
+                    if y > 440 and found == 0:
+                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
+                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+                    elif y < wy:
+                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+                        found = 1
+                    elif y >= wy:
+                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+                        found = 1
+                    tracking_flag = 1
                     
-                if y < wy:
-                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-                    comm.setRegulatorOffsets((0.0, 0.0, 0.8))
-                elif y >= wy:
-                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+#                if y < wy:
+#                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                    comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+#                elif y >= wy:
+#                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
                 
                 yaw_error_pixel = wx - x
                 yaw_error_rad = (75.0/640.0)*yaw_error_pixel
-                yaw_offset = 2.0*yaw_error_rad + 0.00001*sum_yaw
-                sum_yaw = sum_yaw + yaw_offset
-                #print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
+                if prev_yaw != -100.0:
+                    yaw_diff = yaw_error_rad - prev_yaw
+                else:
+                    yaw_diff = 0.0
+                yaw_offset = 2.1*yaw_error_rad + 0.0000005*sum_yaw #+ 0.8*yaw_diff #
+                prev_yaw = yaw_error_rad
+                sum_yaw = sum_yaw + yaw_error_rad
+                # print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
                 end_time = datetime.datetime.now()
                 round_time = end_time - start_time
                 dt = round_time.seconds/1.0 + round_time.microseconds/1000000.0

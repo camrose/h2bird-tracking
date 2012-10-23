@@ -10,6 +10,8 @@ from serial import *
 from struct import *
 from Queue import *
 from pythonlib.lib.quaternion import *
+from pylab import *
+import numpy as np
 
 
 # In future, add "from pythonlib.lib.network_coordinator import NetworkCoordinator"
@@ -65,9 +67,12 @@ if __name__ == '__main__':
         process = 1
         start_time = datetime.datetime.now()
         yaw_offset = 0.0
-        sum_yaw = 0.0
+        yaw_acc = np.zeros(7)
         prev_yaw = -100.0
         yaw_diff = 0.0
+        Kp = 3.3
+        Kd = 10.0
+        Ki = 0.001
         while process:
 
             if kbmon.hasKey():
@@ -91,26 +96,26 @@ if __name__ == '__main__':
                 wx = int(components[2])
                 wy = int(components[3])
                 
-                if y > 440 or tracking_flag == 1:
-                    if y > 440 and found == 0:
-                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
-                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
-                    elif y < wy:
-                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
-                        found = 1
-                    elif y >= wy:
-                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
-                        found = 1
-                    tracking_flag = 1
+#                if y > 440 or tracking_flag == 1:
+#                    if y > 440 and found == 0:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+#                    elif y < wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+#                        found = 1
+#                    elif y >= wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+#                        found = 1
+#                    tracking_flag = 1
                     
-#                if y < wy:
-#                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-#                    comm.setRegulatorOffsets((0.0, 0.0, 0.85))
-#                elif y >= wy:
-#                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
-#                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+                if y < wy:
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+                elif y >= wy:
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
                 
                 yaw_error_pixel = wx - x
                 yaw_error_rad = (75.0/640.0)*yaw_error_pixel
@@ -118,9 +123,14 @@ if __name__ == '__main__':
                     yaw_diff = yaw_error_rad - prev_yaw
                 else:
                     yaw_diff = 0.0
-                yaw_offset = 2.1*yaw_error_rad + 0.0000005*sum_yaw #+ 0.8*yaw_diff #
+                sum_yaw = sum(yaw_acc)
+                yaw_offset = Kp*yaw_error_rad + Kd*yaw_diff + Ki*sum_yaw #
+                if yaw_offset > 90.0:
+                    yaw_offset = 90.0
+                elif yaw_offset < -90.0:
+                    yaw_offset = -90.0
                 prev_yaw = yaw_error_rad
-                sum_yaw = sum_yaw + yaw_error_rad
+                yaw_acc = append(yaw_acc[1:], yaw_error_rad)
                 # print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
                 end_time = datetime.datetime.now()
                 round_time = end_time - start_time
@@ -142,7 +152,7 @@ if __name__ == '__main__':
         fname = './data/TrackingOutput-' + d + '-' + t + '.txt'
         record_log = open(fname, 'w')
         record_log.write("Time\tBird X\tBird Y\tWindow X\tWindow Y\tPixel" +
-                         "Error\tYaw Rad Error\tYaw Offset\tFramerate:" + str(framerate) +"\n")
+                         "Error\tYaw Rad Error\tYaw Offset\tFramerate: " + str(framerate) +"\n")
         for i in range(len(pixel_pos)):
             record_log.write(str(pixel_pos[i][0]) + "\t" + str(pixel_pos[i][1]) +
                              "\t" + str(pixel_pos[i][2]) + "\t" + str(pixel_pos[i][3]) +

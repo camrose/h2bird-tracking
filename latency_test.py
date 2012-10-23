@@ -11,11 +11,11 @@ if __name__ == "__main__":
     CAM = 0
     H_SIZE = 640
     V_SIZE = 480
-    DISP_H = 128
-    DISP_V = 102
+    DISP_H = 1280
+    DISP_V = 1024
     THRESHOLD = 100
     N_SAMPLES = 100
-    WINDOW = 1
+    WINDOW = 30
 
     # Open camera
     cap = cv2.VideoCapture(CAM)
@@ -54,6 +54,7 @@ if __name__ == "__main__":
             retval, frame = cap.read()
             c = frame[tuple(samples.T)]                     # sample current colors
             color_distance = sum(sum((c0-c)**2, axis=1))/N_SAMPLES
+            #print "Color Distance: " + str(color_distance) + "\n"
             
         end = time.time()                                   # stop timer
         times = append(times[1:end], end-start)             # update moving average

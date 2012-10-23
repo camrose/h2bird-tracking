@@ -25,7 +25,7 @@
 
 /* Modes (TODO: command line) */
 #define DISPLAY                     0 // Display camera capture
-#define RECORD                      0 // Record video
+#define RECORD                      1 // Record video
 #define VERBOSE                     1 // Lots of printing
 
 /* Camera driver config values */

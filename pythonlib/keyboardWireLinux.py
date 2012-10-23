@@ -43,7 +43,7 @@ class KeyboardInterface(object):
     def __init__(self, comm_interface = None):
         self.comm = comm_interface
         # Attitude state
-        self.yaw = IncrementCounter( start_value = 0.0, range = (180.0, -180.0), increment = 45.0 )
+        self.yaw = IncrementCounter( start_value = 0.0, range = (180.0, -180.0), increment = 179.0 )
         self.pitch = IncrementCounter( start_value = 0.0, range = (90.0, -90.0), increment = 10.0 )    
         self.roll = IncrementCounter( start_value = 0.0, range = (180.0, -180.0), increment = 10.0)
         # Slew state
@@ -52,10 +52,10 @@ class KeyboardInterface(object):
         self.roll_rate = IncrementCounter( start_value = 0.0, range = (10.0, -10.0), increment = 0.25 )    
         # Actuator state
         self.elevator = IncrementCounter( start_value = 0.0, range = (1.0, -1.0), increment = 0.2 )
-        self.thrust = IncrementCounter( start_value = 0.0, range = (1.0, 0.0), increment = 0.025 ) #RESTORE upper limit
+        self.thrust = IncrementCounter( start_value = 0.0, range = (1.0, 0.0), increment = 0.5 ) #RESTORE upper limit
         self.steer = IncrementCounter( start_value = 0.0, range = (1.0, -1.0), increment = 0.05 )        
         # PID constants        
-        self.yaw_coeffs = [ 0.0,    0.0,    -2.0,   0.0,    -0.4,    1.0,    1.0] # For steer Ki 0.8
+        self.yaw_coeffs = [ 0.0,    0.0,    2.0,   0.0,    0.4,    1.0,    1.0] # For steer Ki 0.8
         self.pitch_coeffs = [ 0.0,    0.0,    3.0,   0.0,    0.2,    1.0,    1.0] # For elevator
         self.roll_coeffs = [ 0.0,    0.0,    -0.2,   0.0,    0.0,    1.0,    1.0] # For thrust 
         self.yaw_filter_coeffs = [ 3, 0, 0.0007, 0.0021, 0.0021, 0.0007, 1.0, 2.6861573965, -2.419655111, 0.7301653453]
@@ -90,19 +90,19 @@ class KeyboardInterface(object):
             # self.comm.rotateRefLocal(quatGenerate(radians(-10), (0,1,0)))
             self.ref_changed = True
         elif c == 'a':
-            # self.yaw.decrease()
-            # self.ref_changed = True
+            self.yaw.decrease()
+            self.ref_changed = True
             # self.comm.rotateRefGlobal(quatGenerate(radians(-10), (0,0,1)))
-            self.yaw_rate.decrease()                
-            self.rate_changed = True
+            # self.yaw_rate.decrease()                
+            # self.rate_changed = True
             # self.steer.decrease()
             # self.offsets_changed = True
         elif c == 'd':
-            # self.yaw.increase()
-            # self.ref_changed = True
+            self.yaw.increase()
+            self.ref_changed = True
             # self.comm.rotateRefGlobal(quatGenerate(radians(10), (0,0,1)))
-            self.yaw_rate.increase()            
-            self.rate_changed = True
+            # self.yaw_rate.increase()            
+            # self.rate_changed = True
             # self.steer.increase()
             # self.offsets_changed = True
         elif c == 'q':
@@ -155,7 +155,9 @@ class KeyboardInterface(object):
             self.offsets_changed = True                        
         elif c == '[':
             self.thrust.decrease()
-            self.offsets_changed = True            
+            self.offsets_changed = True  
+        elif c == 'x':
+            self.comm.setRegulatorRef( eulerToQuaternionDeg( 180.0, 80.0, 0.0 ) )          
         elif c == '\x1b': #Esc key
             #break
             raise Exception('Exit')

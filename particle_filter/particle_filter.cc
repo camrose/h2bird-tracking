@@ -73,8 +73,8 @@ void ParticleFilter::Observe(Mat frame) {
   Vec3b color, em_color;
   for(unsigned int i = 0; i < num_particles_; i++) {
     p = particles_.row(i);
-    color = frame.at<Vec3b>(p(0), p(1));
-    em_color = emission_model_.at<Vec3b>(p(0), p(1));
+    color = frame.at<Vec3d>(p(0), p(1));
+    em_color = emission_model_.at<Vec3d>(p(0), p(1));
     //weights_.at<double>(i) = 1/(1 + pow(norm(color, emission_model_), 2));
     weights_.at<double>(i) = 1 + pow(norm(color, em_color), 2);
     // TODO: calculate cumsum of weights, to speed resampling

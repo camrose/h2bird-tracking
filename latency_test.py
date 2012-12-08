@@ -8,19 +8,19 @@ import cv
 if __name__ == "__main__":
 
     # Parameters
-    CAM = 0
-    H_SIZE = 640
-    V_SIZE = 480
-    DISP_H = 128
-    DISP_V = 102
-    THRESHOLD = 100
+    CAM = 1
+    H_SIZE = 320
+    V_SIZE = 240
+    DISP_H = 800
+    DISP_V = 600
+    THRESHOLD = 200
     N_SAMPLES = 100
-    WINDOW = 1
+    WINDOW = 30
 
     # Open camera
     cap = cv2.VideoCapture(CAM)
-    cap.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv.CV_CAP_PROP_FRAME_WIDTH, H_SIZE)
+    cap.set(cv.CV_CAP_PROP_FRAME_HEIGHT, V_SIZE)
     retval, frame = cap.read()
     
     # Open target window
@@ -54,6 +54,7 @@ if __name__ == "__main__":
             retval, frame = cap.read()
             c = frame[tuple(samples.T)]                     # sample current colors
             color_distance = sum(sum((c0-c)**2, axis=1))/N_SAMPLES
+            #print color_distance
             
         end = time.time()                                   # stop timer
         times = append(times[1:end], end-start)             # update moving average

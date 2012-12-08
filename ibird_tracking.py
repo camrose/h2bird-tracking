@@ -53,7 +53,7 @@ if __name__ == "__main__":
     CAM = 0
     H_SIZE = 640
     V_SIZE = 480
-    DISPLAY = False
+    DISPLAY = True
 
     # Color Model
     #color_model = (19, 69, 177)  # Water bottle

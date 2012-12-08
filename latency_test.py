@@ -54,7 +54,7 @@ if __name__ == "__main__":
             retval, frame = cap.read()
             c = frame[tuple(samples.T)]                     # sample current colors
             color_distance = sum(sum((c0-c)**2, axis=1))/N_SAMPLES
-            #print color_distance
+            #print "Color Distance: " + str(color_distance) + "\n"
             
         end = time.time()                                   # stop timer
         times = append(times[1:end], end-start)             # update moving average

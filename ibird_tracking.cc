@@ -24,8 +24,8 @@
 #include "particle_filter/particle_filter.h"
 
 /* Modes (TODO: command line) */
-#define DISPLAY                     1 // Display camera capture
-#define RECORD                      0 // Record video
+#define DISPLAY                     0 // Display camera capture
+#define RECORD                      1 // Record video
 #define VERBOSE                     1 // Lots of printing
 
 /* Camera driver config values */
@@ -132,11 +132,6 @@ int main( int argc, char** argv ) {
   //printf("Saturation: %f\n", cam_saturation);
   //printf("Gain: %f\n", cam_gain);
 #endif
-  
-  // Show first frame
-  cam >> frame;
-  imshow("First frame",frame);
-  setMouseCallback( "First frame", mouseHandler, 0 );
 
   // Open video recording
 #if RECORD
@@ -148,19 +143,29 @@ int main( int argc, char** argv ) {
 #endif
 
   // Setup particle filter
-  static const Range b[] = { Range(0, frame_size.height-1), 
+  static const Range b[] = { Range(90, frame_size.height-1), 
                              Range(0, frame_size.width-1) };
   vector<Range> bounds(b, b + sizeof(b) / sizeof(b[0]));
   //Vec3b color = Vec3b(107, 166, 165); // Tennis ball
   //Vec3b color = Vec3b(123, 93, 189); // Pink tail
-  Vec3b color = Vec3b(66, 48, 140); // Pink tail shadows
+  //Vec3b color = Vec3b(66, 48, 140); // Pink tail shadows
   //Vec3b color = Vec3b(66, 81, 49); // Green tail
   // Tennis ball
   // H: 85-95
   // S: 63-136
   // V: 133-232
   //Vec3b color = Vec3b(90, 100, 0);
-  TransitionModel transition_model = {0, 16, 0.3};
+  
+  // Draw small square near (0,0) on first frame
+  cam >> frame;
+  //rectangle(frame, Point(10,10), Point(11.5,11.5), Scalar(128, 128, 128), -1);
+  
+  // Show first frame
+  imshow("First frame",frame);
+  setMouseCallback( "First frame", mouseHandler, 0 );
+  
+  // Setup particle filter
+  TransitionModel transition_model = {0, 16, 0.1};
   ParticleFilter pf(NUM_PARTICLES, bounds, transition_model, frame.clone());
   
   DECLARE_TIMING(frameTimer);

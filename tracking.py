@@ -10,6 +10,8 @@ from serial import *
 from struct import *
 from Queue import *
 from pythonlib.lib.quaternion import *
+from pylab import *
+import numpy as np
 
 
 # In future, add "from pythonlib.lib.network_coordinator import NetworkCoordinator"
@@ -23,9 +25,12 @@ DEFAULT_CHAN = 0x12
 xb = None
 
 if __name__ == '__main__':
-
+  
+    framerate = 0.0
     pixel_pos = []
-    row = 0;
+    row = 0
+    tracking_flag = 0
+    found = 0
     
     print "Beginning initialization..."
 
@@ -62,6 +67,12 @@ if __name__ == '__main__':
         process = 1
         start_time = datetime.datetime.now()
         yaw_offset = 0.0
+        yaw_acc = np.zeros(7)
+        prev_yaw = -100.0
+        yaw_diff = 0.0
+        Kp = 3.3
+        Kd = 10.0
+        Ki = 0.001
         while process:
 
             if kbmon.hasKey():
@@ -70,7 +81,7 @@ if __name__ == '__main__':
                     process = 0
                     break
                 if c == 'm':
-                    tracking = subprocess.Popen(args = './bin/ibird_tracking', shell = False, stdout = subprocess.PIPE)
+                    tracking = subprocess.Popen(args = ['nice', '-n', str(-10), './bin/ibird_tracking'], shell = False, stdout = subprocess.PIPE, bufsize = 0)
                     line_open = 1;              
                 kbint.process(c)
             if line_open == 1:
@@ -80,44 +91,68 @@ if __name__ == '__main__':
             if line != '' and line[0] == '#':
                 components = line[1:-1].split(',')
             #    print components
-                y = int(components[1])
                 x = int(components[0])
-                #wx = int(components[2])
-                wx = 160
-                wy = 120
+                y = int(components[1])
+                wx = int(components[2])
+                wy = int(components[3])
                 
-                #wy = int(components[3])
+#                if y > 440 or tracking_flag == 1:
+#                    if y > 440 and found == 0:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( 90.0, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+#                    elif y < wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.85))
+#                        found = 1
+#                    elif y >= wy:
+#                        comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+#                        comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+#                        found = 1
+#                    tracking_flag = 1
+                    
                 if y < wy:
-                   comm.setRegulatorOffsets((yaw_offset, 0.0, 0.8))
-                   # comm.rotateRefGlobal(quatGenerate(radians(yaw_offset), (0,0,1)))
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.85))
                 elif y >= wy:
-                   # comm.rotateRefGlobal(quatGenerate(radians(yaw_offset), (0,0,1)))
-                   comm.setRegulatorOffsets((yaw_offset, 0.0, 1.0))
-                yaw_error_pixel = wx - x;
-                yaw_error_rad = (60.0/320.0)*0.0174533*yaw_error_pixel
-                yaw_offset = -3.0*yaw_error_rad
-                #if yaw_offset < 0:
-                #    yaw_offset = -1
-                #else:
-                #    yaw_offset = 1
-                print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
+                    comm.setRegulatorRef( eulerToQuaternionDeg( yaw_offset, 80.0, 0.0 ) )
+                    comm.setRegulatorOffsets((0.0, 0.0, 0.9))
+                
+                yaw_error_pixel = wx - x
+                yaw_error_rad = (75.0/640.0)*yaw_error_pixel
+                if prev_yaw != -100.0:
+                    yaw_diff = yaw_error_rad - prev_yaw
+                else:
+                    yaw_diff = 0.0
+                sum_yaw = sum(yaw_acc)
+                yaw_offset = Kp*yaw_error_rad + Kd*yaw_diff + Ki*sum_yaw #
+                if yaw_offset > 90.0:
+                    yaw_offset = 90.0
+                elif yaw_offset < -90.0:
+                    yaw_offset = -90.0
+                prev_yaw = yaw_error_rad
+                yaw_acc = append(yaw_acc[1:], yaw_error_rad)
+                # print str(x) + "," + str(y) + "," + str(wx) + "," + str(wy)
                 end_time = datetime.datetime.now()
                 round_time = end_time - start_time
                 dt = round_time.seconds/1.0 + round_time.microseconds/1000000.0
                 pixel_pos.append([dt,x,y,wx,wy,yaw_error_pixel,yaw_error_rad,yaw_offset])
-            time.sleep(0.02)
+
+            if line != '' and line[0] == 'F':
+              framerate = float(line[6:12])
+            #time.sleep(0.06)
 
     except Exception as e:
         print e
 
     finally:
+        print str(framerate)
         today = datetime.datetime.today()
         d = str(today.year) + "_" + str(today.month) + "_" + str(today.day)
         t = str(today.hour) + "_" + str(today.minute) + "_" + str(today.second)
-        fname = 'TrackingOutput-' + d + '-' + t + '.txt'
+        fname = './data/TrackingOutput-' + d + '-' + t + '.txt'
         record_log = open(fname, 'w')
         record_log.write("Time\tBird X\tBird Y\tWindow X\tWindow Y\tPixel" +
-                         "Error\tYaw Rad Error\tYaw Offset\n")
+                         "Error\tYaw Rad Error\tYaw Offset\tFramerate: " + str(framerate) +"\n")
         for i in range(len(pixel_pos)):
             record_log.write(str(pixel_pos[i][0]) + "\t" + str(pixel_pos[i][1]) +
                              "\t" + str(pixel_pos[i][2]) + "\t" + str(pixel_pos[i][3]) +

@@ -51,3 +51,13 @@ def quaternionToEuler(q):
         psi = atan2(2.0*(w*z + x*y), 1.0 - 2.0*(y*y + z*z))
     return (psi, theta, phi)
     
+if __name__ == '__main__':
+    q1 = (0.7332657075825944, 0.18601817061114526, 0.6152829847875021, -0.22168782311363508)
+    q2 = (0.7165254267866683, -0.22735636632457662, 0.6012362213458364, 0.27095276636647947)
+    e1 = quaternionToEuler(q1)
+    e2 = quaternionToEuler(q2)
+    
+    print "Yaw, Pitch, Roll 1: " + str(e1[0]) + " " + str(e1[1]) + " " + str(e1[2]) + "\n"
+    print "Yaw, Pitch, Roll 2: " + str(e2[0]) + " " + str(e2[1]) + " " + str(e2[2]) + "\n"
+    
+    
